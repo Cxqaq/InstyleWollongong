@@ -3,9 +3,13 @@ import type { ShopInfo, StaffMember, WeeklySchedule } from "./types";
 const adminTokenKey = "instyle_admin_token";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers = {
+    ...(options?.body ? { "Content-Type": "application/json" } : {}),
+    ...options?.headers,
+  };
   const response = await fetch(path, {
-    headers: options?.body ? { "Content-Type": "application/json", ...options.headers } : options?.headers,
     ...options,
+    headers,
   });
   if (!response.ok) {
     if (response.status === 401) {
