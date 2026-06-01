@@ -123,11 +123,27 @@ export function AdminDashboard() {
     setNotice("Signed out.");
   }
 
+  function handleAdminError(error: unknown, fallbackMessage = "Could not save changes. Please try again.") {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("401")) {
+      clearAdminToken();
+      setAdminTokenState(null);
+      setData(null);
+      setNotice("Your admin session expired. Please sign in again.");
+      return;
+    }
+    setNotice(fallbackMessage);
+  }
+
   function ShopEditor() {
     async function handleSubmit(event: FormEvent) {
       event.preventDefault();
-      await saveShop(shop);
-      await refresh();
+      try {
+        await saveShop(shop);
+        await refresh();
+      } catch (error) {
+        handleAdminError(error);
+      }
     }
 
     return (
@@ -149,8 +165,12 @@ export function AdminDashboard() {
   function BranchesEditor() {
     async function handleSubmit(event: FormEvent) {
       event.preventDefault();
-      await saveShop(shop);
-      await refresh();
+      try {
+        await saveShop(shop);
+        await refresh();
+      } catch (error) {
+        handleAdminError(error);
+      }
     }
 
     return (
@@ -192,8 +212,12 @@ export function AdminDashboard() {
   function PricesEditor() {
     async function handleSubmit(event: FormEvent) {
       event.preventDefault();
-      await saveShop(shop);
-      await refresh();
+      try {
+        await saveShop(shop);
+        await refresh();
+      } catch (error) {
+        handleAdminError(error);
+      }
     }
 
     return (
@@ -227,14 +251,22 @@ export function AdminDashboard() {
         setNotice("Staff ID is required.");
         return;
       }
-      await saveStaffMember(activeStaff);
-      setActiveStaff({ ...blankStaff, branch_id: activeBranch?.id ?? "wollongong" });
-      await refresh();
+      try {
+        await saveStaffMember(activeStaff);
+        setActiveStaff({ ...blankStaff, branch_id: activeBranch?.id ?? "wollongong" });
+        await refresh();
+      } catch (error) {
+        handleAdminError(error, "Could not save that staff member. Please check the details and try again.");
+      }
     }
 
     async function handleDelete(staffId: string) {
-      await removeStaffMember(staffId);
-      await refresh("Staff member removed successfully.");
+      try {
+        await removeStaffMember(staffId);
+        await refresh("Staff member removed successfully.");
+      } catch (error) {
+        handleAdminError(error, "Could not remove that staff member. Please try again.");
+      }
     }
 
     return (
@@ -287,8 +319,12 @@ export function AdminDashboard() {
       try {
         await saveSchedule(JSON.parse(scheduleText) as WeeklySchedule);
         await refresh();
-      } catch {
-        setNotice("Schedule JSON is invalid. Please check the format and try again.");
+      } catch (error) {
+        if (error instanceof SyntaxError) {
+          setNotice("Schedule JSON is invalid. Please check the format and try again.");
+          return;
+        }
+        handleAdminError(error, "Could not save the schedule. Please check the format and try again.");
       }
     }
 
