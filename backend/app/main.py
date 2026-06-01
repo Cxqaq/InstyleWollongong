@@ -1,8 +1,12 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
+import certifi
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ConfigurationError, PyMongoError, ServerSelectionTimeoutError
 
@@ -11,13 +15,17 @@ from app.config import get_settings
 from app.repository import DemoRepository, MassageRepository, MongoMassageRepository, RepositoryError
 from app.schemas import ShopInfo, StaffMember, WeeklySchedule
 
+FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+FRONTEND_ASSETS = FRONTEND_DIST / "assets"
+FRONTEND_INDEX = FRONTEND_DIST / "index.html"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     client = None
     try:
-        client = AsyncIOMotorClient(settings.mongodb_uri, serverSelectionTimeoutMS=1200)
+        client = AsyncIOMotorClient(settings.mongodb_uri, serverSelectionTimeoutMS=1200, tlsCAFile=certifi.where())
         await client.admin.command("ping")
         app.state.repository = MongoMassageRepository(client[settings.mongodb_db])
         app.state.data_source = "mongodb"
@@ -142,3 +150,17 @@ async def update_schedule(
         return await repository.save_schedule(schedule)
     except (RepositoryError, PyMongoError) as exc:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
+
+
+if FRONTEND_ASSETS.exists():
+    app.mount("/assets", StaticFiles(directory=FRONTEND_ASSETS), name="assets")
+
+
+@app.get("/{path:path}", include_in_schema=False)
+async def serve_frontend(path: str) -> FileResponse:
+    requested_file = FRONTEND_DIST / path
+    if path and requested_file.is_file():
+        return FileResponse(requested_file)
+    if FRONTEND_INDEX.exists():
+        return FileResponse(FRONTEND_INDEX)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Frontend build not found")

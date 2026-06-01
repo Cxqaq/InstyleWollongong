@@ -12,4 +12,6 @@ backend/.env
 *.pyc
 *-server.log
 *-server.err.log
+prod-check.log
+prod-check.err.log
 verification-*.png
