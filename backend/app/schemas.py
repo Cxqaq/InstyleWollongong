@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
 
 class ContactInfo(BaseModel):
@@ -48,10 +48,10 @@ class ShopInfo(BaseModel):
 
 
 class StaffMember(BaseModel):
-    id: str
-    name: str
-    role: str
-    branch_id: str
+    id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    role: str = Field(min_length=1)
+    branch_id: str = Field(min_length=1)
     specialties: list[str]
     bio: str
     years_experience: int = Field(ge=0)
@@ -70,13 +70,6 @@ class DaySchedule(BaseModel):
     date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
     day: Literal["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     shifts: list[Shift]
-
-    @field_validator("shifts")
-    @classmethod
-    def require_at_least_one_shift(cls, value: list[Shift]) -> list[Shift]:
-        if not value:
-            raise ValueError("each schedule day needs at least one shift")
-        return value
 
 
 class WeeklySchedule(BaseModel):

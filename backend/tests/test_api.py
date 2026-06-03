@@ -46,3 +46,41 @@ def test_admin_endpoints_require_login() -> None:
     assert bad_login.status_code == 401
     assert login.status_code == 200
     assert allowed.status_code == 200
+
+
+def test_staff_delete_allows_empty_schedule_days() -> None:
+    with TestClient(app) as client:
+        login = client.post("/api/admin/login", json={"username": "test-admin", "password": "test-password"})
+        headers = {"Authorization": f"Bearer {login.json()['token']}"}
+
+        for member in client.get("/api/staff").json():
+            delete_response = client.delete(f"/api/admin/staff/{member['id']}", headers=headers)
+            assert delete_response.status_code == 204
+
+        schedule = client.get("/api/schedule")
+
+    assert schedule.status_code == 200
+    assert len(schedule.json()["days"]) == 7
+    assert all(day["shifts"] == [] for day in schedule.json()["days"])
+
+
+def test_staff_save_rejects_missing_required_details() -> None:
+    with TestClient(app) as client:
+        login = client.post("/api/admin/login", json={"username": "test-admin", "password": "test-password"})
+        invalid_staff = {
+            "id": "",
+            "name": "",
+            "role": "",
+            "branch_id": "wollongong",
+            "specialties": [],
+            "bio": "",
+            "years_experience": 0,
+            "image_url": "",
+        }
+        response = client.post(
+            "/api/admin/staff",
+            json=invalid_staff,
+            headers={"Authorization": f"Bearer {login.json()['token']}"},
+        )
+
+    assert response.status_code == 422

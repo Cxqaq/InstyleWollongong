@@ -247,12 +247,13 @@ export function AdminDashboard() {
   function StaffEditor() {
     async function handleSubmit(event: FormEvent) {
       event.preventDefault();
-      if (!activeStaff.id.trim()) {
-        setNotice("Staff ID is required.");
+      const nextStaff = { ...activeStaff, id: activeStaff.id.trim(), name: activeStaff.name.trim(), role: activeStaff.role.trim(), branch_id: activeStaff.branch_id.trim() };
+      if (!nextStaff.id || !nextStaff.name || !nextStaff.role || !nextStaff.branch_id) {
+        setNotice("Staff ID, name, role, and branch are required.");
         return;
       }
       try {
-        await saveStaffMember(activeStaff);
+        await saveStaffMember(nextStaff);
         setActiveStaff({ ...blankStaff, branch_id: activeBranch?.id ?? "wollongong" });
         await refresh();
       } catch (error) {
@@ -298,10 +299,10 @@ export function AdminDashboard() {
             </label>
           </div>
           <div className="admin-grid two">
-            <label>ID<input value={activeStaff.id} onChange={(event) => updateActiveStaff({ id: event.target.value })} /></label>
-            <label>Name<input value={activeStaff.name} onChange={(event) => updateActiveStaff({ name: event.target.value })} /></label>
-            <label>Role<input value={activeStaff.role} onChange={(event) => updateActiveStaff({ role: event.target.value })} /></label>
-            <label>Branch<select value={activeStaff.branch_id} onChange={(event) => updateActiveStaff({ branch_id: event.target.value })}>{shop.locations.map((location) => <option key={location.id} value={location.id}>{location.suburb}</option>)}</select></label>
+            <label>ID<input required value={activeStaff.id} onChange={(event) => updateActiveStaff({ id: event.target.value })} /></label>
+            <label>Name<input required value={activeStaff.name} onChange={(event) => updateActiveStaff({ name: event.target.value })} /></label>
+            <label>Role<input required value={activeStaff.role} onChange={(event) => updateActiveStaff({ role: event.target.value })} /></label>
+            <label>Branch<select required value={activeStaff.branch_id} onChange={(event) => updateActiveStaff({ branch_id: event.target.value })}>{shop.locations.map((location) => <option key={location.id} value={location.id}>{location.suburb}</option>)}</select></label>
             <label>Years experience<input type="number" value={activeStaff.years_experience} onChange={(event) => updateActiveStaff({ years_experience: Number(event.target.value) })} /></label>
             <label>Image URL<input value={activeStaff.image_url} onChange={(event) => updateActiveStaff({ image_url: event.target.value })} /></label>
             <label className="span-2">Specialties comma separated<input value={activeStaff.specialties.join(", ")} onChange={(event) => updateActiveStaff({ specialties: splitList(event.target.value) })} /></label>
