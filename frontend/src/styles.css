@@ -17,6 +17,12 @@ html {
 body {
   margin: 0;
   min-width: 320px;
+  background:
+    linear-gradient(rgba(247, 244, 238, 0.64), rgba(247, 244, 238, 0.78)),
+    url("./assets/page-wellness-background.png");
+  background-attachment: fixed;
+  background-position: center top;
+  background-size: cover;
 }
 
 a {
@@ -106,6 +112,11 @@ main {
   flex-direction: column;
   justify-content: center;
   padding: clamp(28px, 4.5vw, 56px);
+  background:
+    linear-gradient(90deg, rgba(255, 253, 248, 0.9) 0%, rgba(255, 253, 248, 0.72) 58%, rgba(255, 253, 248, 0.34) 100%),
+    url("./assets/page-wellness-background.png");
+  background-position: center right;
+  background-size: cover;
 }
 
 .eyebrow {
