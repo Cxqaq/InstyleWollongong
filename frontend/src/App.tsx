@@ -41,7 +41,8 @@ export function App() {
   const selectedHours = Object.keys(selectedLocation.hours).length > 0 ? selectedLocation.hours : shop.hours;
   const selectedPrices = selectedLocation.price_menu.length > 0 ? selectedLocation.price_menu : shop.price_menu;
   const branchStaff = staff.filter((member) => member.branch_id === selectedLocation.id);
-  const branchStaffSummary = branchStaff.length > 0 ? branchStaff.map((member) => member.name).join(", ") : "Staff profiles coming soon.";
+  const staffNames = branchStaff.map((member) => member.name.trim()).filter(Boolean);
+  const branchStaffSummary = staffNames.length > 0 ? staffNames.join(", ") : `${branchStaff.length} staff profiles available`;
 
   return (
     <>

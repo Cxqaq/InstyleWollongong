@@ -38,12 +38,12 @@ export function BranchStaffAvailability({ branchId, branchName, staff }: BranchS
             {visibleStaff.map((member) => (
               <article className="staff-availability-card" key={member.id}>
                 {member.image_url ? (
-                  <img src={member.image_url} alt={member.name} />
+                  <img src={member.image_url} alt={member.name || "Staff member"} />
                 ) : (
-                  <div className="staff-photo-fallback" aria-hidden="true">{member.name.slice(0, 1)}</div>
+                  <div className="staff-photo-fallback" aria-hidden="true">{(member.name || "S").slice(0, 1)}</div>
                 )}
                 <div>
-                  <h3>{member.name}</h3>
+                  <h3>{member.name || "Staff member"}</h3>
                   <p>{member.role}</p>
                 </div>
               </article>
